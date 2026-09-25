@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Soccer Dashboard & Tournament</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;        
+            --bg-card: #16213e;        
+            --accent-blue: #0f3460;    
+            --text-main: #eaeaea;      
+            --text-muted: #a8a8a8;     
+            --border-color: #16213e;   
+            
+            --match-red: #e74c3c;       
+            --match-blue: #3498db;      
+            --match-center: #1abc9c;    
+            
+            --color-win: #2ecc71;      
+            --color-lose: #e74c3c;     
+            --color-draw: #f39c12;     
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: linear-gradient(135deg, #0a0e27 0%, #1a2a4a 100%);
+            color: var(--text-main); 
+            padding: 40px 20px; 
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a2a4a 100%); 
+            margin-top: -40px; 
+            padding-top: 40px; 
+            padding-bottom: 10px; 
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ffffff 0%, #00d4ff 50%, #3498db 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .update-status {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2ecc71;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Nav Bar */
+        .nav-bar {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            padding: 15px 20px;
+            border-bottom: 3px solid #0f3460;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: relative;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid #2a4a6a;
+            background-color: rgba(30, 41, 59, 0.4);
+            color: var(--text-main);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            border-color: #3498db;
+            color: #3498db;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border-color: #3498db;
+            color: white;
+            box-shadow: 0 0 25px rgba(52, 152, 219, 0.5);
+        }
+
+        /* ปุ่ม Apps Launcher (9 จุด) สไตล์ Google */
+        .apps-icon-btn {
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a4a6a;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .apps-icon-btn:hover {
+            background: rgba(52, 152, 219, 0.2);
+            border-color: #3498db;
+        }
+
+        .grid-dots {
+            display: grid;
+            grid-template-columns: repeat(3, 4px);
+            gap: 3px;
+        }
+
+        .grid-dots span {
+            width: 4px;
+            height: 4px;
+            background-color: var(--text-main);
+            border-radius: 50%;
+        }
+
+        /* ป๊อบอัพ Google App Grid Container */
+        .apps-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .apps-menu-card {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 320px;
+            max-height: 450px;
+            background: #121a2d;
+            border: 1px solid #2a4a6a;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .apps-menu-card.show {
+            display: block;
+            animation: popupFade 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popupFade {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .apps-menu-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            padding-left: 5px;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .app-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .app-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .app-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .app-name {
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        /* สไตล์ไอคอนแต่ละไฟล์ */
+        .icon-html { background: linear-gradient(135deg, #e44d26, #f16529); color: white; }
+        .icon-rules { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .icon-schedule { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+        .icon-more { background: linear-gradient(135deg, #34495e, #2c3e50); color: white; }
+
+        #fullscreen-btn {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-color: #3498db;
+            color: #3498db;
+            margin-left: auto; 
+        }
+        #fullscreen-btn:hover {
+            background-color: #3498db;
+            color: white;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .view { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title { font-size: 24px; font-weight: 600; color: var(--text-main); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #2a4a6a; padding-bottom: 10px; }
+        .description-text { color: var(--text-muted); font-size: 14px; line-height: 1.8; margin-bottom: 20px; background-color: rgba(15, 52, 96, 0.5); padding: 15px; border-radius: 8px; border-left: 4px solid #3498db; }
+
+        /* General UI Elements */
+        .loader { text-align: center; padding: 60px 20px; color: var(--match-blue); font-size: 18px; font-weight: 600; }
+        .loader-spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #2a4a6a; border-top: 4px solid var(--match-blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .empty-message { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 16px; }
+
+        /* Matches View Styles */
+        .matches-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-top: 30px; }
+        .match-card { background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); border: 2px solid #2a4a6a; border-radius: 12px; padding: 20px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .match-card:hover { border-color: #3498db; box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3); transform: translateY(-5px); }
+        .match-header { text-align: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #2a4a6a; }
+        .match-title { font-size: 18px; font-weight: 600; color: #b0b0b0; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
+        .match-content { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
+        .team-container { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .team-box { width: 100%; text-align: center; padding: 12px 10px; border-radius: 8px; color: white; font-weight: 600; font-size: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); word-break: break-word; }
+        .team-left { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .team-center { background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%); flex: 0.3; align-self: center; }
+        .team-right { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+        .vs-text { font-size: 14px; font-weight: 700; letter-spacing: 2px; padding: 10px 5px; }
+        .badge { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; text-align: center; width: 100%; }
+        .badge-win { background-color: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid #2ecc71; }
+        .badge-lose { background-color: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid #e74c3c; }
+        .badge-draw { background-color: rgba(243, 156, 18, 0.15); color: #f39c12; border: 1px solid #f39c12; }
+        .badge-empty { opacity: 0; } 
+        .score-row { display: flex; justify-content: space-between; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #2a4a6a; }
+        .score-item { flex: 1; text-align: center; }
+        .score-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .score-value { font-size: 28px; font-weight: 700; font-family: 'Kanit', sans-serif; }
+
+        /* Pagination & Other Lists */
+        .info-card { background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); border: 2px solid #2a4a6a; border-radius: 12px; padding: 20px; margin-bottom: 15px; transition: all 0.3s ease; }
+        .info-card:hover { border-color: #3498db; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
+        .info-title { font-size: 18px; font-weight: 600; color: #3498db; margin-bottom: 10px; font-family: 'Orbitron', sans-serif; }
+        .info-text { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .team-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .team-item { background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); border: 2px solid #2a4a6a; border-radius: 10px; padding: 15px; text-align: center; transition: all 0.3s ease; cursor: pointer; }
+        .team-item:hover { border-color: #3498db; box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3); transform: translateY(-3px); }
+        .team-name-item { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .team-code { font-size: 12px; color: #3498db; font-family: 'Orbitron', sans-serif; font-weight: 700; }
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-bottom: 20px; }
+        .page-btn { padding: 8px 20px; background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); border: 2px solid #2a4a6a; color: var(--text-main); border-radius: 8px; cursor: pointer; font-family: 'Kanit', sans-serif; font-weight: 600; transition: all 0.3s ease; }
+        .page-btn:hover:not(:disabled) { border-color: #3498db; color: #3498db; box-shadow: 0 0 10px rgba(52, 152, 219, 0.3); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #1a1a2e; }
+        .page-info { font-size: 16px; font-weight: 600; color: #3498db; }
+
+        /* Tournament Bracket & Podium */
+        .bracket-wrapper {
+            position: relative;
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.4) 0%, rgba(10, 30, 60, 0.5) 100%);
+            border: 2px solid #1a5a9e;
+            border-radius: 16px;
+            padding: 50px 30px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+        }
+        .bracket-wrapper svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .bracket-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: stretch; gap: 20px; min-height: 600px; }
+        .bracket-col { display: flex; flex-direction: column; justify-content: space-around; align-items: center; position: relative; }
+        .bracket-col-title { position: absolute; top: -30px; font-size: 14px; font-weight: 700; color: #00d4ff; text-transform: uppercase; letter-spacing: 1.5px; }
+
+        .bracket-col.sou8-left, .bracket-col.sou8-right { gap: 30px; }
+        .bracket-col.semi-left, .bracket-col.semi-right { gap: 120px; }
+        .bracket-col.center-final { flex: 1; justify-content: flex-end; align-items: center; padding-bottom: 20px; } 
+
+        .bracket-team, .semi-box {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border: 2px solid #2a4a6a;
+            border-left: 6px solid #3498db;
+            border-radius: 10px;
+            padding: 12px 20px;
+            min-width: 170px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .bracket-team:hover, .semi-box.filled:hover { border-color: #00d4ff; box-shadow: 0 0 15px rgba(0, 212, 255, 0.4); transform: scale(1.02); }
+        .bracket-team.empty, .semi-box.empty { border-left-color: #555; color: #777; }
+        .semi-box { min-height: 50px; display: flex; align-items: center; justify-content: center; }
+        
+        /* Podium */
+        .podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 15px; height: 350px; z-index: 2; }
+        .podium-step {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            background: linear-gradient(to top, #0f172a, #1e293b);
+            border: 2px solid; border-bottom: none; border-radius: 12px 12px 0 0;
+            padding: 20px 15px; width: 160px; text-align: center; position: relative;
+            box-shadow: inset 0 5px 15px rgba(255,255,255,0.05), 0 -5px 20px rgba(0,0,0,0.5);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .podium-step:hover { filter: brightness(1.2); }
+
+        .step-2 { height: 220px; border-color: #bdc3c7; } 
+        .step-1 { height: 300px; border-color: #f1c40f; box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -10px 30px rgba(241, 196, 15, 0.2); }
+        .step-3 { height: 220px; border-color: #cd7f32; } 
+
+        .podium-icon { font-size: 35px; margin-bottom: 10px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+        .step-1 .podium-icon { font-size: 50px; margin-bottom: 15px; }
+
+        .podium-rank-text { font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+        .step-2 .podium-rank-text { color: #bdc3c7; }
+        .step-1 .podium-rank-text { color: #f1c40f; font-size: 16px; }
+        .step-3 .podium-rank-text { color: #cd7f32; }
+
+        .podium-team { font-size: 18px; font-weight: 700; color: #fff; word-break: break-word; font-family: 'Orbitron', sans-serif; min-height: 50px; }
+        .step-1 .podium-team { font-size: 24px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+
+        .podium-btn {
+            position: absolute; bottom: 20px; padding: 8px 15px; border-radius: 20px; border: none;
+            cursor: pointer; font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 14px; width: 80%;
+            transition: 0.3s; text-transform: uppercase;
+        }
+        .podium-btn.gold { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #000; }
+        .podium-btn.silver { background: linear-gradient(135deg, #bdc3c7, #95a5a6); color: #000; }
+        .podium-btn.bronze { background: linear-gradient(135deg, #cd7f32, #d35400); color: #fff; }
+        .podium-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+
+        .scrambling { color: #00d4ff !important; font-family: 'Orbitron', monospace; text-shadow: 0 0 8px #00d4ff; }
+        
+        @media (max-width: 1400px) {
+            .bracket-team, .semi-box { min-width: 140px; font-size: 13px; padding: 10px; }
+            .podium-step { width: 140px; }
+            .step-1 .podium-team { font-size: 20px; }
+            .bracket-wrapper { padding: 40px 20px; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 28px; }
+            .matches-grid { grid-template-columns: 1fr; gap: 15px; }
+            .nav-bar { flex-direction: column; align-items: stretch; }
+            .nav-btn, #fullscreen-btn { width: 100%; max-width: 100%; margin-left: 0; justify-content: center; }
+            .apps-dropdown { width: 100%; display: flex; justify-content: center; }
+            .apps-menu-card { right: auto; left: 50%; transform: translateX(-50%); width: 290px; }
+            .bracket-team, .semi-box { min-width: 110px; font-size: 11px; padding: 8px; }
+            .bracket-col.sou8-left, .bracket-col.sou8-right { gap: 20px; }
+            .bracket-col.semi-left, .bracket-col.semi-right { gap: 80px; }
+            .podium-container { height: 280px; gap: 10px; }
+            .podium-step { width: 100px; padding: 15px 5px; }
+            .step-2 { height: 180px; }
+            .step-1 { height: 250px; }
+            .step-3 { height: 180px; }
+            .podium-icon { font-size: 25px; }
+            .step-1 .podium-icon { font-size: 35px; }
+            .podium-rank-text { font-size: 10px; }
+            .podium-team { font-size: 14px; }
+            .step-1 .podium-team { font-size: 16px; }
+            .podium-btn { font-size: 11px; padding: 5px; width: 90%; }
+            .bracket-col-title { font-size: 10px; top: -20px; }
+        }
+    
+/* ===== PLAY-OFF TAB ===== */
+.playoff-view{
+  --po-bg:#0b1028;--po-bg2:#101b38;--po-panel:#12284b;--po-panel2:#162f55;
+  --po-cyan:#2edcff;--po-cyan2:#1599df;--po-text:#f4f8ff;--po-muted:#8ea4c4;
+  --po-line:#1c6fa9;--po-gold:#ffc400;--po-silver:#c8d2dc;--po-bronze:#e97816;
+  --po-green:#22c55e;--po-danger:#ff6b35;
+}
+
+.playoff-view{
+  --bg:#0b1028;
+  --bg2:#101b38;
+  --panel:#12284b;
+  --panel2:#162f55;
+  --cyan:#2edcff;
+  --cyan2:#1599df;
+  --text:#f4f8ff;
+  --muted:#8ea4c4;
+  --line:#1c6fa9;
+  --gold:#ffc400;
+  --silver:#c8d2dc;
+  --bronze:#e97816;
+  --green:#22c55e;
+  --danger:#ff6b35;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;width:100%}
+body{
+  font-family:Arial,"Noto Sans Thai",Tahoma,sans-serif;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(31,94,153,.20),transparent 34%),
+    linear-gradient(135deg,#080d21 0%,#0c1430 48%,#111e3b 100%);
+  color:var(--po-text);
+}
+.page{
+  min-height:100vh;
+  padding:28px 48px 42px;
+  overflow-x:auto;
+  position:relative;
+}
+.page:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 78%);
+}
+.header{
+  max-width:1450px;
+  margin:0 auto 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  position:relative;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.logo{
+  width:56px;
+  height:56px;
+  border-radius:13px;
+  background:linear-gradient(145deg,#42e7ff,#18aee2);
+  color:#07152b;
+  display:grid;
+  place-items:center;
+  font-weight:1000;
+  font-size:24px;
+  box-shadow:0 0 24px rgba(46,220,255,.25),inset 0 1px 0 rgba(255,255,255,.55);
+}
+.brand-title{
+  font-size:36px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:.055em;
+  color:#42dcff;
+  text-shadow:0 0 16px rgba(46,220,255,.18);
+}
+.brand-sub{
+  margin-top:9px;
+  font-size:12px;
+  font-weight:800;
+  color:#91a8c8;
+  letter-spacing:.22em;
+}
+.live{
+  position:absolute;
+  right:0;
+  font-size:12px;
+  font-weight:800;
+  color:#b8c8de;
+  background:rgba(11,25,52,.72);
+  border:1px solid rgba(75,145,196,.35);
+  padding:9px 14px;
+  border-radius:999px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.live:first-letter{color:var(--po-green)}
+.board{
+  max-width:1590px;
+  margin:auto;
+  background:linear-gradient(180deg,rgba(17,37,72,.80),rgba(9,22,47,.88));
+  border:1px solid rgba(35,119,177,.55);
+  border-radius:14px;
+  padding:26px 28px 18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.025);
+  position:relative;
+}
+.bracket-grid{
+  display:grid;
+  grid-template-columns:1fr 500px 1fr;
+  gap:40px;
+  align-items:center;
+  min-height:570px;
+  margin:8px auto 12px;
+}
+.match-side{
+  display:flex;
+  flex-direction:column;
+  gap:78px;
+}
+.team-pair{
+  width:100%;
+  max-width:390px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  position:relative;
+}
+.left .team-pair{margin-left:auto}
+.right .team-pair{margin-right:auto}
+.team{
+  min-height:56px;
+  background:linear-gradient(180deg,#173761 0%,#11294b 100%);
+  color:var(--po-text);
+  padding:0 20px;
+  display:flex;
+  align-items:center;
+  font-size:17px;
+  font-weight:900;
+  letter-spacing:.01em;
+  border:1px solid #2a587e;
+  border-radius:10px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 7px 18px rgba(0,0,0,.22);
+  position:relative;
+  overflow:hidden;
+}
+.team:before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:5px;
+  background:linear-gradient(180deg,#37dfff,#168ed0);
+}
+.left .team:before{left:0}
+.right .team:before{right:0}
+.left .team{justify-content:flex-start;padding-left:25px}
+.right .team{justify-content:flex-end;padding-right:25px;text-align:right}
+.team.winner{
+  border-color:rgba(46,220,255,.72);
+  box-shadow:0 0 0 1px rgba(46,220,255,.15),0 8px 22px rgba(0,0,0,.25),0 0 18px rgba(46,220,255,.08);
+}
+.center-column{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:30px;
+}
+.winner-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  width:100%;
+}
+.winner-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+}
+.winner-label{
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  color:#6f89ad;
+}
+.playoff-title{
+  font-size:31px;
+  font-weight:1000;
+  font-style:italic;
+  letter-spacing:.18em;
+  text-align:center;
+  text-transform:uppercase;
+  color:#dff8ff;
+  text-shadow:0 0 14px rgba(46,220,255,.24);
+  padding:7px 0;
+}
+.playoff-title:before,
+.playoff-title:after{
+  content:"";
+  display:inline-block;
+  width:62px;
+  height:2px;
+  background:linear-gradient(90deg,transparent,#27cfff);
+  vertical-align:middle;
+  margin:0 17px;
+  box-shadow:0 0 8px rgba(46,220,255,.35);
+}
+.playoff-title:after{
+  background:linear-gradient(90deg,#27cfff,transparent);
+}
+.winner-box{
+  width:155px;
+  min-height:62px;
+  padding:13px 14px;
+  background:linear-gradient(180deg,#1a3559,#112643);
+  border:1px solid #3b6b91;
+  color:#f5fbff;
+  text-align:center;
+  font-weight:1000;
+  font-size:16px;
+  border-radius:10px;
+  box-shadow:0 8px 22px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.winner-box.empty{
+  background:rgba(20,43,74,.55);
+  color:#5f7595;
+  border-color:#304e6c;
+  border-style:dashed;
+}
+.status{
+  max-width:1450px;
+  margin:16px auto 0;
+  padding-top:14px;
+  border-top:1px solid rgba(54,115,157,.28);
+  display:flex;
+  justify-content:space-between;
+  color:#6f88aa;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+.updated{
+  max-width:1450px;
+  margin:0 auto 12px;
+  text-align:right;
+  font-size:11px;
+  color:#7e96b8;
+}
+.updated strong{color:#b8cbe4}
+.error{
+  max-width:1450px;
+  margin:14px auto 0;
+  padding:12px 15px;
+  background:rgba(112,29,29,.22);
+  border:1px solid rgba(255,107,53,.35);
+  color:#ffb8a2;
+  border-radius:10px;
+  display:none;
+}
+@media(max-width:1200px){
+  .brand-title{font-size:30px}
+  .live{position:static}
+  .header{justify-content:space-between}
+  .bracket-grid{grid-template-columns:1fr 430px 1fr;gap:24px}
+}
+@media(max-width:900px){
+  .page{padding:20px 18px}
+  .header{flex-direction:column;gap:14px}
+  .live{position:static}
+  .brand-title{font-size:25px}
+  .board{padding:18px 14px}
+  .bracket-grid{grid-template-columns:1fr;gap:35px}
+  .center-column{order:-1}
+  .match-side{gap:25px}
+  .team-pair{max-width:100%}
+  .left .team-pair,.right .team-pair{margin:0}
+  .playoff-title{font-size:24px}
+  .playoff-title:before,.playoff-title:after{width:35px;margin:0 10px}
+  .status{gap:10px;flex-wrap:wrap}
+}
+
+/* ===== BRACKET CONNECTORS ===== */
+.bracket-grid{position:relative}
+.match-side{position:relative;z-index:2}
+.center-column{position:relative;z-index:3}
+.team-pair{z-index:4}
+
+/* connector from each two-team match toward its winner slot */
+.match-side .team-pair::before{
+  content:"";
+  position:absolute;
+  top:50%;
+  height:2px;
+  background:linear-gradient(90deg,#1f9fe0,#35d7ff);
+  box-shadow:0 0 8px rgba(46,220,255,.28);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* vertical fork joining the two teams */
+.match-side .team-pair::after{
+  content:"";
+  position:absolute;
+  top:calc(50% - 37px);
+  height:74px;
+  width:2px;
+  background:#28b9f2;
+  box-shadow:0 0 8px rgba(46,220,255,.22);
+  z-index:-1;
+  pointer-events:none;
+}
+
+.left .team-pair::after{right:-1px}
+.left .team-pair::before{
+  right:-126px;
+  width:126px;
+}
+.left .team-pair:nth-child(2)::before{
+  right:-299px;
+  width:299px;
+}
+
+.right .team-pair::after{left:-1px}
+.right .team-pair::before{
+  left:-126px;
+  width:126px;
+}
+.right .team-pair:nth-child(2)::before{
+  left:-299px;
+  width:299px;
+}
+
+/* small horizontal lead-in from the fork to the match edge */
+.left .team-pair .team:first-child::after,
+.left .team-pair .team:last-child::after,
+.right .team-pair .team:first-child::after,
+.right .team-pair .team:last-child::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:0;
+}
+
+/* make team names prominent and centered */
+.team{
+  justify-content:center !important;
+  text-align:center !important;
+  padding-left:24px !important;
+  padding-right:24px !important;
+  font-size:21px;
+  min-height:64px;
+  line-height:1.2;
+}
+.left .team,.right .team{justify-content:center;text-align:center}
+
+/* Winner boxes: larger and vertically centered */
+.winner-box{
+  width:170px;
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 16px;
+  font-size:19px;
+  line-height:1.15;
+}
+
+/* bring the connector visually behind the boxes */
+.winner-wrap{position:relative;z-index:5}
+
+@media(max-width:1200px){
+  .left .team-pair:nth-child(2)::before,
+  .right .team-pair:nth-child(2)::before{width:250px}
+  .left .team-pair:nth-child(2)::before{right:-250px}
+  .right .team-pair:nth-child(2)::before{left:-250px}
+}
+@media(max-width:900px){
+  .match-side .team-pair::before,
+  .match-side .team-pair::after{display:none}
+  .team{font-size:20px}
+}
+
+
+</style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="sticky-wrapper">
+            <div class="header">
+                <h1>🏆 Go Robot Challenge 2026</h1>
+                <div class="update-status">
+                    <span class="status-dot"></span>
+                    <span id="status-text">กำลังเชื่อมต่อข้อมูลแบบเรียลไทม์...</span>
+                </div>
+            </div>
+
+            <!-- Navigation Bar มีการเพิ่ม App Launcher (ปุ่มจุด 9 จุด) สไตล์ Google -->
+            <div class="nav-bar">
+                <button class="nav-btn active" onclick="switchView('standings-view', this)">📊 สรุปผลคะแนน</button>
+                <button class="nav-btn" onclick="switchView('matches-view', this)">⚽ ผลการแข่งขัน</button>
+                <!--<button class="nav-btn" onclick="switchView('teams-view', this)">👥 ทีมต่างๆ</button>-->
+                <button class="nav-btn" onclick="switchView('tournament-view', this)">🏆 ทัวร์นาเมนต์</button>
+                <button class="nav-btn" onclick="switchView('playoff-view', this)">⚔️ PLAY-OFF</button>
+                <!--<button class="nav-btn" onclick="switchView('info-view', this)">ℹ️ ข้อมูล</button>-->
+                
+                <!-- 🎛️ Google-style Apps Grid Button -->
+                <div class="apps-dropdown">
+                    <button class="apps-icon-btn" onclick="toggleAppsMenu(event)" title="รายการไฟล์/แอปพลิเคชัน">
+                        <div class="grid-dots">
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                        </div>
+                    </button>
+
+                    <!-- Card Pop-up แสดงไฟล์แบบไอคอน Grid -->
+                    <div class="apps-menu-card" id="appsMenuCard">
+                        <div class="apps-menu-title">รายการไฟล์และลิงก์</div>
+                        <div class="apps-grid">
+                            <a href="wedo_idektep.html" class="app-item">
+                                <div class="app-icon icon-html">&lt;&gt;</div>
+                                <div class="app-name">การเเข่งขัน wedo เเละ iDektep</div>
+                            </a>
+                      
+                        </div>
+                    </div>
+                </div>
+
+                <button id="fullscreen-btn" class="nav-btn" onclick="toggleFullScreen()">🖵 เต็มจอ</button>
+            </div>
+        </div>
+
+        <div id="standings-view" class="view active">
+            <h2 class="section-title">📊 สรุปคะแนนกลุ่ม</h2>
+            <p class="description-text">ดูอันดับและคะแนนของแต่ละทีมในแต่ละกลุ่ม</p>
+            <div id="standings-content"><div class="loader"><div class="loader-spinner"></div>กำลังโหลดข้อมูล...</div></div>
+        </div>
+
+        <div id="matches-view" class="view">
+            <h2 class="section-title">⚽ ตารางการเเเข่งขัน</h2>
+            <p class="description-text">ดูรายละเอียดผลการแข่งขัน สกอร์ และผลลัพธ์ของแต่ละทีม</p>
+            <div id="matches-content"><div class="loader"><div class="loader-spinner"></div>กำลังโหลดข้อมูล...</div></div>
+        </div>
+
+        <div id="teams-view" class="view">
+            <h2 class="section-title">👥 ทีมต่างๆ</h2>
+            <p class="description-text">รายชื่อทีมทั้งหมดในการแข่งขัน GoROBOT Challenge</p>
+            <div id="teams-content">
+                <div class="team-list" id="team-list-grid">
+                    <div class="loader"><div class="loader-spinner"></div>กำลังโหลดข้อมูล...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tournament-view" class="view">
+            <h2 class="section-title">🏆 สายการแข่งขัน (Tournament Bracket)</h2>
+            <p class="description-text">แผนผังสายการแข่งขันในรอบน็อคเอาท์ และทำเนียบผู้ชนะ</p>
+            
+            <div class="bracket-wrapper">
+                <svg id="bracket-svg"></svg>
+                <div class="bracket-content">
+                    
+                    <!-- LEFT TEAMS -->
+                    <div class="bracket-col sou8-left">
+                        <div class="bracket-col-title">QUARTER-FINALS</div>
+                        <div class="bracket-team empty" id="t-qf1">-</div>
+                        <div class="bracket-team empty" id="t-qf2">-</div>
+                        <div class="bracket-team empty" id="t-qf3">-</div>
+                        <div class="bracket-team empty" id="t-qf4">-</div>
+                    </div>
+
+                    <!-- LEFT SEMI-FINALS -->
+                    <div class="bracket-col semi-left">
+                        <div class="bracket-col-title">SEMI-FINALS</div>
+                        <div class="semi-box empty" id="t-sf1">-</div>
+                        <div class="semi-box empty" id="t-sf2">-</div>
+                    </div>
+
+                    <!-- CENTER: แท่นรางวัล (Podium) -->
+                    <div class="bracket-col center-final">
+                        <div class="podium-container">
+                            <div class="podium-step step-2" id="step-runner1">
+                                <div class="podium-icon">🥈</div>
+                                <div class="podium-rank-text">2ND PLACE</div>
+                                <div class="podium-team" id="t-runner1">-</div>
+                                <button class="podium-btn silver">รองแชมป์</button>
+                            </div>
+                            
+                            <div class="podium-step step-1" id="step-winner">
+                                <div class="podium-icon">🏆</div>
+                                <div class="podium-rank-text">THE CHAMPION</div>
+                                <div class="podium-team winner" id="t-winner">-</div>
+                                <button class="podium-btn gold">ผู้ชนะเลิศ</button>
+                            </div>
+                            
+                            <div class="podium-step step-3" id="step-runner2">
+                                <div class="podium-icon">🥉</div>
+                                <div class="podium-rank-text">3RD PLACE</div>
+                                <div class="podium-team" id="t-runner2">-</div>
+                                <button class="podium-btn bronze">อันดับที่ 3</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SEMI-FINALS -->
+                    <div class="bracket-col semi-right">
+                        <div class="bracket-col-title">SEMI-FINALS</div>
+                        <div class="semi-box empty" id="t-sf3">-</div>
+                        <div class="semi-box empty" id="t-sf4">-</div>
+                    </div>
+
+                    <!-- RIGHT TEAMS -->
+                    <div class="bracket-col sou8-right">
+                        <div class="bracket-col-title">QUARTER-FINALS</div>
+                        <div class="bracket-team empty" id="t-qf5">-</div>
+                        <div class="bracket-team empty" id="t-qf6">-</div>
+                        <div class="bracket-team empty" id="t-qf7">-</div>
+                        <div class="bracket-team empty" id="t-qf8">-</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="playoff-view" class="view playoff-view">
+<div class="page">
+<header class="header">
+<div class="brand"><div class="logo">S</div><div><div class="brand-title" id="po-title">PLAY-OFF</div><div class="brand-sub" id="po-subtitle">TOURNAMENT • PLAY-OFF</div></div></div>
+<div class="live">● LIVE • GOOGLE SHEETS</div>
+</header>
+<div class="updated">อัปเดตล่าสุด: <strong id="po-updated">กำลังโหลด...</strong></div>
+
+<main class="board"><div class="bracket-grid">
+
+<div class="match-side left" id="po-leftSide">
+<div class="team-pair"><div class="team">รอข้อมูล</div><div class="team">รอข้อมูล</div></div>
+<div class="team-pair"><div class="team">รอข้อมูล</div><div class="team">รอข้อมูล</div></div>
+</div>
+
+<div class="center-column">
+<div class="winner-row">
+<div class="winner-wrap"><div class="winner-label">WINNER</div><div class="winner-box" id="po-winnerL1">รอผล</div></div>
+<div class="winner-wrap"><div class="winner-label">WINNER</div><div class="winner-box" id="po-winnerL2">รอผล</div></div>
+</div>
+
+<div class="playoff-title">PLAY-OFF</div>
+
+<div class="winner-row">
+<div class="winner-wrap"><div class="winner-label">WINNER</div><div class="winner-box" id="po-winnerR1">รอผล</div></div>
+<div class="winner-wrap"><div class="winner-label">WINNER</div><div class="winner-box" id="po-winnerR2">รอผล</div></div>
+</div>
+</div>
+
+<div class="match-side right" id="po-rightSide">
+<div class="team-pair"><div class="team">รอข้อมูล</div><div class="team">รอข้อมูล</div></div>
+<div class="team-pair"><div class="team">รอข้อมูล</div><div class="team">รอข้อมูล</div></div>
+</div>
+
+</div></main>
+<div class="status"><span id="po-googleStatus">● Google Sheets Connected</span><span id="po-count">0 MATCHES</span><span>AUTO REFRESH 15s</span></div>
+<div id="po-error" class="error"></div>
+</div>
+
+
+        </div>
+
+        <div id="info-view" class="view">
+            <h2 class="section-title">ℹ️ ข้อมูลการแข่งขัน</h2>
+            <div class="info-card"><div class="info-title">วิธีการคิดคะแนน</div><div class="info-text">ชนะ = 3 แต้ม, เสมอ = 1 แต้ม, แพ้ = 0 แต้ม</div></div>
+            <div class="info-card"><div class="info-title">ระบบอัปเดต</div><div class="info-text">กระดานจะรีเฟรชข้อมูลอัตโนมัติทุกๆ 3 วินาที (Real-time)</div></div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyW5ETY1czEn7LuM8Dxl_-V4LUYMJwg-sBuP4En7TfW3zHYFf6iROtvID6fRE032dxl/exec";
+        
+        let teamNameMap = {};
+        let allTeams = new Set();
+        let globalMatches = [];
+        let currentMatchPage = 1;
+        const MATCHES_PER_PAGE = 4;
+        let autoPageTimer = null;
+        const AUTO_PAGE_DELAY = 10000; 
+
+        // สลับมุมมองแท็บภายในหน้าเดิม
+        function switchView(viewId, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn:not(#fullscreen-btn)').forEach(b => b.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            btn.classList.add('active');
+
+            if (viewId === 'matches-view') {
+                startAutoPageAdvance();
+            } else {
+                stopAutoPageAdvance();
+            }
+
+            if (viewId === 'tournament-view') {
+                setTimeout(drawBracketLines, 100); 
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ระบบเปิด/ปิด Google Apps Grid Menu
+        function toggleAppsMenu(e) {
+            e.stopPropagation();
+            const card = document.getElementById('appsMenuCard');
+            card.classList.toggle('show');
+        }
+
+        // ปิด Apps Menu เมื่อคลิกที่บริเวณอื่น
+        window.addEventListener('click', function(e) {
+            const card = document.getElementById('appsMenuCard');
+            if (card && card.classList.contains('show')) {
+                if (!card.contains(e.target)) {
+                    card.classList.remove('show');
+                }
+            }
+        });
+
+        // วาดเส้น Bracket
+        function drawBracketLines() {
+            const svg = document.getElementById('bracket-svg');
+            const wrapper = document.querySelector('.bracket-wrapper');
+            
+            if (!svg || !wrapper) return;
+
+            svg.innerHTML = '';
+            const width = wrapper.scrollWidth || wrapper.offsetWidth;
+            const height = wrapper.scrollHeight || wrapper.offsetHeight;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+            const leftTeams = document.querySelectorAll('.bracket-col.sou8-left .bracket-team');
+            const semiLeft = document.querySelectorAll('.bracket-col.semi-left .semi-box');
+            const champPodium = document.getElementById('step-winner');
+            const semiRight = document.querySelectorAll('.bracket-col.semi-right .semi-box');
+            const rightTeams = document.querySelectorAll('.bracket-col.sou8-right .bracket-team');
+
+            const getPos = (el) => {
+                const rect = el.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                return {
+                    x: rect.left - wrapperRect.left + rect.width / 2,
+                    y: rect.top - wrapperRect.top + rect.height / 2,
+                    width: rect.width,
+                    height: rect.height,
+                    top: rect.top - wrapperRect.top
+                };
+            };
+
+            const drawPath = (points, dashed = false) => {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                let d = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                    d += ` L ${points[i].x} ${points[i].y}`;
+                }
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', '#3498db');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill', 'none');
+                if (dashed) {
+                    path.setAttribute('stroke-dasharray', '5,5');
+                }
+                svg.appendChild(path);
+            };
+
+            for (let i = 0; i < leftTeams.length; i += 2) {
+                if(!semiLeft[i / 2]) break;
+                const team1 = getPos(leftTeams[i]);
+                const team2 = getPos(leftTeams[i + 1]);
+                const semi = getPos(semiLeft[i / 2]);
+                const midX = team1.x + team1.width / 2 + 40;
+
+                drawPath([ { x: team1.x + team1.width / 2, y: team1.y }, { x: midX, y: team1.y }, { x: midX, y: semi.y }, { x: semi.x - semi.width / 2, y: semi.y } ]);
+                drawPath([ { x: team2.x + team2.width / 2, y: team2.y }, { x: midX, y: team2.y }, { x: midX, y: semi.y }, { x: semi.x - semi.width / 2, y: semi.y } ]);
+            }
+
+            for (let i = 0; i < rightTeams.length; i += 2) {
+                if(!semiRight[i / 2]) break;
+                const team1 = getPos(rightTeams[i]);
+                const team2 = getPos(rightTeams[i + 1]);
+                const semi = getPos(semiRight[i / 2]);
+                const midX = team1.x - team1.width / 2 - 40;
+
+                drawPath([ { x: team1.x - team1.width / 2, y: team1.y }, { x: midX, y: team1.y }, { x: midX, y: semi.y }, { x: semi.x + semi.width / 2, y: semi.y } ]);
+                drawPath([ { x: team2.x - team2.width / 2, y: team2.y }, { x: midX, y: team2.y }, { x: midX, y: semi.y }, { x: semi.x + semi.width / 2, y: semi.y } ]);
+            }
+
+            if (champPodium) {
+                const champPos = getPos(champPodium);
+                const targetY = champPos.top + 30;
+                
+                semiLeft.forEach(semi => {
+                    const s = getPos(semi);
+                    const midX = s.x + s.width/2 + 30;
+                    drawPath([ { x: s.x + s.width/2, y: s.y }, { x: midX, y: s.y }, { x: midX, y: targetY }, { x: champPos.x - 20, y: targetY } ]);
+                });
+
+                semiRight.forEach(semi => {
+                    const s = getPos(semi);
+                    const midX = s.x - s.width/2 - 30;
+                    drawPath([ { x: s.x - s.width/2, y: s.y }, { x: midX, y: s.y }, { x: midX, y: targetY }, { x: champPos.x + 20, y: targetY } ]);
+                });
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (document.getElementById('tournament-view').classList.contains('active')) {
+                drawBracketLines();
+            }
+        });
+
+        function toggleFullScreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+            } else { cancelFullScreen.call(doc); }
+        }
+
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        function updateFullscreenButton() {
+            const btn = document.getElementById('fullscreen-btn');
+            if (document.fullscreenElement) { btn.innerHTML = "🗗 ย่อจอลง"; } else { btn.innerHTML = "🖵 เต็มจอ"; }
+        }
+
+        function buildTeamNameMap(standingsData) {
+            if (!standingsData) return;
+            teamNameMap = {};
+            allTeams.clear();
+            standingsData.forEach(row => {
+                row.forEach(cell => {
+                    const text = cell.toString().trim();
+                    const match = text.match(/([A-D][1-4])$/);
+                    if (match) { teamNameMap[match[1]] = text; allTeams.add(text); }
+                });
+            });
+        }
+
+        function createStandingsTable(dataArray) {
+            if (!dataArray || dataArray.length === 0) return '<div class="empty-message">ไม่พบข้อมูลในระบบ</div>';
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            dataArray.forEach((row, rowIndex) => {
+                if (row.every(cell => cell.toString().trim() === "")) return;
+                html += '<tr>';
+                row.forEach((cell) => {
+                    let cellText = cell.toString().trim();
+                    if (cellText.toUpperCase() === "FALSE") cellText = "";
+                    const style = `padding: 12px 15px; text-align: center; border: 1px solid #2a4a6a; background-color: #0f3460; color: #eaeaea; font-weight: 500;`;
+                    if (rowIndex === 0) { html += `<th style="${style}; background-color: #1a4a7a; font-family: 'Orbitron', sans-serif;">${cellText}</th>`; } 
+                    else { html += `<td style="${style}">${cellText}</td>`; }
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            return html;
+        }
+
+        function parseMatches(matchesData) {
+            if (!matchesData || matchesData.length === 0) return [];
+            let matchesList = [];
+            for (let r = 0; r < matchesData.length; r++) {
+                const row = matchesData[r];
+                if (!row) continue;
+                for (let c = 0; c < row.length; c++) {
+                    const cellVal = row[c] ? row[c].toString().trim().toUpperCase() : "";
+                    if (cellVal === "VS") {
+                        let matchTitle = row[c-2] ? row[c-2].toString().trim() : "Match";
+                        let teamLeft = row[c-1] ? row[c-1].toString().trim() : "—";
+                        let teamRight = row[c+2] ? row[c+2].toString().trim() : (row[c+1] ? row[c+1].toString().trim() : "—");
+                        const nextRow = matchesData[r+1];
+                        let leftScore = "—", rightScore = "—", leftResult = "", rightResult = "";
+                        if (nextRow) {
+                            let rawLeftScore = nextRow[c], rawRightScore = nextRow[c+1];
+                            if (rawLeftScore !== undefined && rawLeftScore !== null && rawLeftScore.toString().trim() !== "" && rawLeftScore.toString().trim().toUpperCase() !== "FALSE") leftScore = rawLeftScore.toString().trim();
+                            if (rawRightScore !== undefined && rawRightScore !== null && rawRightScore.toString().trim() !== "" && rawRightScore.toString().trim().toUpperCase() !== "FALSE") rightScore = rawRightScore.toString().trim();
+                            let rawLeftResult = nextRow[c-1] ? nextRow[c-1].toString().trim().toUpperCase() : "";
+                            let rawRightResult = nextRow[c+2] ? nextRow[c+2].toString().trim().toUpperCase() : (nextRow[c+1] ? nextRow[c+1].toString().trim().toUpperCase() : "");
+                            if (["WIN", "LOSE", "DRAW"].includes(rawLeftResult)) leftResult = rawLeftResult;
+                            if (["WIN", "LOSE", "DRAW"].includes(rawRightResult)) rightResult = rawRightResult;
+                        }
+                        if (teamNameMap[teamLeft]) teamLeft = teamNameMap[teamLeft];
+                        if (teamNameMap[teamRight]) teamRight = teamNameMap[teamRight];
+                        matchesList.push({ matchTitle, teamLeft, teamRight, leftScore, rightScore, leftResult, rightResult });
+                    }
+                }
+            }
+            return matchesList;
+        }
+
+        function startAutoPageAdvance() {
+            stopAutoPageAdvance();
+            autoPageTimer = setInterval(() => {
+                const totalPages = Math.ceil(globalMatches.length / MATCHES_PER_PAGE);
+                if (totalPages <= 1) return;
+                currentMatchPage = currentMatchPage >= totalPages ? 1 : currentMatchPage + 1;
+                document.getElementById('matches-content').innerHTML = renderMatchCardsPaginated(globalMatches);
+            }, AUTO_PAGE_DELAY);
+        }
+
+        function stopAutoPageAdvance() {
+            if (autoPageTimer) { clearInterval(autoPageTimer); autoPageTimer = null; }
+        }
+
+        function changeMatchPage(delta) {
+            const totalPages = Math.ceil(globalMatches.length / MATCHES_PER_PAGE);
+            currentMatchPage += delta;
+            if (currentMatchPage < 1) currentMatchPage = 1;
+            if (currentMatchPage > totalPages) currentMatchPage = totalPages;
+            document.getElementById('matches-content').innerHTML = renderMatchCardsPaginated(globalMatches);
+            if (document.getElementById('matches-view').classList.contains('active')) { startAutoPageAdvance(); }
+        }
+
+        function renderMatchCardsPaginated(parsedMatches) {
+            if (!parsedMatches || parsedMatches.length === 0) return '<div class="empty-message">ไม่พบข้อมูลการแข่งขัน</div>';
+            const totalPages = Math.ceil(parsedMatches.length / MATCHES_PER_PAGE);
+            if (currentMatchPage > totalPages) currentMatchPage = totalPages;
+            if (currentMatchPage < 1) currentMatchPage = 1;
+            const startIndex = (currentMatchPage - 1) * MATCHES_PER_PAGE;
+            const currentMatchesToDisplay = parsedMatches.slice(startIndex, startIndex + MATCHES_PER_PAGE);
+            let html = '<div class="matches-grid">';
+            currentMatchesToDisplay.forEach(m => {
+                const getBadge = (result) => {
+                    if (result === "WIN") return '<div class="badge badge-win">WIN</div>';
+                    if (result === "LOSE") return '<div class="badge badge-lose">LOSE </div>';
+                    if (result === "DRAW") return '<div class="badge badge-draw">DRAW </div>';
+                    return '<div class="badge badge-empty">-</div>';
+                };
+                html += `
+                    <div class="match-card">
+                        <div class="match-header"><div class="match-title">${m.matchTitle}</div></div>
+                        <div class="match-content">
+                            <div class="team-container"><div class="team-box team-left">${m.teamLeft}</div>${getBadge(m.leftResult)}</div>
+                            <div class="team-box team-center vs-text">VS</div>
+                            <div class="team-container"><div class="team-box team-right">${m.teamRight}</div>${getBadge(m.rightResult)}</div>
+                        </div>
+                        <div class="score-row">
+                            <div class="score-item"><div class="score-label">Score</div><div class="score-value" style="color: #e74c3c;">${m.leftScore}</div></div>
+                            <div class="score-item"><div class="score-label">Score</div><div class="score-value" style="color: #3498db;">${m.rightScore}</div></div>
+                        </div>
+                    </div>`;
+            });
+            html += '</div>';
+            if (totalPages > 1) {
+                html += `<div class="pagination-container">
+                        <button class="page-btn" onclick="changeMatchPage(-1)" ${currentMatchPage === 1 ? 'disabled' : ''}>◀ ก่อนหน้า</button>
+                        <span class="page-info">หน้าที่ ${currentMatchPage} / ${totalPages}</span>
+                        <button class="page-btn" onclick="changeMatchPage(1)" ${currentMatchPage === totalPages ? 'disabled' : ''}>ถัดไป ▶</button>
+                    </div>`;
+            }
+            return html;
+        }
+
+        function createTeamsList() {
+            let html = '<div class="team-list">';
+            const sortedTeams = Array.from(allTeams).sort();
+            if (sortedTeams.length === 0) return '<div class="empty-message">ไม่พบข้อมูลทีม</div>';
+            sortedTeams.forEach(team => {
+                const groupMatch = team.match(/([A-D])$/);
+                const groupCode = groupMatch ? groupMatch[1] : "—";
+                html += `<div class="team-item"><div class="team-name-item">${team}</div><div class="team-code">Group ${groupCode}</div></div>`;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function animateScrambleText(element, newText) {
+            if (element.dataset.currentText === newText) return; 
+            element.dataset.currentText = newText;
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+            let iteration = 0;
+            
+            element.classList.add('scrambling');
+            element.classList.remove('empty');
+            if (element.classList.contains('semi-box')) element.classList.add('filled');
+            
+            clearInterval(element.scrambleInterval);
+            element.scrambleInterval = setInterval(() => {
+                element.innerText = newText.split('').map((letter, index) => {
+                    if (index < iteration) return letter;
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join('');
+                
+                if (iteration >= newText.length) {
+                    clearInterval(element.scrambleInterval);
+                    element.classList.remove('scrambling');
+                    if(newText === '-' || newText === '') {
+                        element.classList.add('empty');
+                        element.innerText = '-';
+                        if (element.classList.contains('semi-box')) element.classList.remove('filled');
+                    }
+                }
+                iteration += 1/3; 
+            }, 30);
+        }
+
+        function updateTournament(tData) {
+            if (!tData) return;
+            const mapIds = {
+                'qf1': 't-qf1', 'qf2': 't-qf2', 'qf3': 't-qf3', 'qf4': 't-qf4',
+                'qf5': 't-qf5', 'qf6': 't-qf6', 'qf7': 't-qf7', 'qf8': 't-qf8',
+                'sf1': 't-sf1', 'sf2': 't-sf2', 'sf3': 't-sf3', 'sf4': 't-sf4',
+                'winner': 't-winner', 'runner1': 't-runner1', 'runner2': 't-runner2'
+            };
+
+            for (const [key, elementId] of Object.entries(mapIds)) {
+                const el = document.getElementById(elementId);
+                if (el && tData[key] !== undefined) {
+                    const text = tData[key].trim() || "-";
+                    animateScrambleText(el, text);
+                }
+            }
+            setTimeout(drawBracketLines, 500);
+        }
+
+function esc(v){
+    return String(v ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+    }[m]));
+}
+
+function getTeam(v){
+    const t = String(v ?? "").trim();
+    return !t || ["รอทีม","รอผล","รอผลการแข่งขัน","#VALUE!","#REF!","#N/A","FALSE"].includes(t)
+        ? null
+        : t;
+}
+
+function teamHTML(team, winner){
+    const n = getTeam(team);
+    const winnerName = getTeam(winner);
+    return `<div class="team ${n && winnerName === n ? "winner" : ""}" ${n ? "" : "style='opacity:.6'"}>${esc(n || "รอทีม")}</div>`;
+}
+
+function renderMatch(a, b, w){
+    return `<div class="team-pair">${teamHTML(a, w)}${teamHTML(b, w)}</div>`;
+}
+
+function getEl(id){
+    return document.getElementById(id);
+}
+
+function renderWinner(id, v){
+    const e = getEl(id);
+    if (!e) {
+        console.warn("ไม่พบ element:", id);
+        return;
+    }
+
+    const n = getTeam(v);
+    e.textContent = n || "รอผล";
+    e.className = n ? "winner-box" : "winner-box empty";
+}
+
+function renderPlayoff(data){
+    if (!data) {
+        console.warn("ไม่มีข้อมูลสำหรับ Play-off");
+        return;
+    }
+
+    const p = data.playoffTournament || {};
+
+    const titleEl = getEl("po-title");
+    const subtitleEl = getEl("po-subtitle");
+    const updatedEl = getEl("po-updated");
+    const leftSideEl = getEl("po-leftSide");
+    const rightSideEl = getEl("po-rightSide");
+    const countEl = getEl("po-count");
+
+    if (titleEl) {
+        titleEl.textContent = data.title || "PLAY-OFF";
+    }
+
+    if (subtitleEl) {
+        subtitleEl.textContent = data.subtitle || "TOURNAMENT • PLAY-OFF";
+    }
+
+    if (updatedEl) {
+        updatedEl.textContent = new Date().toLocaleString("th-TH", {
+            dateStyle: "medium",
+            timeStyle: "short"
+        });
+    }
+
+    if (leftSideEl) {
+        leftSideEl.innerHTML =
+            renderMatch(p.l1_team1, p.l1_team2, p.l1_winner) +
+            renderMatch(p.l2_team1, p.l2_team2, p.l2_winner);
+    }
+
+    if (rightSideEl) {
+        rightSideEl.innerHTML =
+            renderMatch(p.r1_team1, p.r1_team2, p.r1_winner) +
+            renderMatch(p.r2_team1, p.r2_team2, p.r2_winner);
+    }
+
+    renderWinner("po-winnerL1", p.l1_winner);
+    renderWinner("po-winnerL2", p.l2_winner);
+    renderWinner("po-winnerR1", p.r1_winner);
+    renderWinner("po-winnerR2", p.r2_winner);
+
+    let c = 0;
+    if (getTeam(p.l1_team1) && getTeam(p.l1_team2)) c++;
+    if (getTeam(p.l2_team1) && getTeam(p.l2_team2)) c++;
+    if (getTeam(p.r1_team1) && getTeam(p.r1_team2)) c++;
+    if (getTeam(p.r2_team1) && getTeam(p.r2_team2)) c++;
+
+    if (countEl) {
+        countEl.textContent = `${c} MATCHES`;
+    }
+
+    console.log("Render Play-off สำเร็จ:", p);
+}
+
+
+        async function updateData() {
+            try {
+                const url = SCRIPT_URL + "?t=" + Date.now();
+                const response = await fetch(url, {
+                    method: "GET",
+                    cache: "no-store"
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const text = await response.text();
+                console.log("Google Sheets API:", text);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (jsonError) {
+                    console.error("JSON Parse Error:", jsonError);
+                    console.error("Server Response:", text);
+                    throw new Error("Google Apps Script ไม่ได้ส่ง JSON กลับมา");
+                }
+
+                console.log("ข้อมูลที่ได้รับ:", data);
+                renderPlayoff(data);
+
+                if (data.standings) {
+                    buildTeamNameMap(data.standings);
+                    document.getElementById('standings-content').innerHTML = createStandingsTable(data.standings);
+                    document.getElementById('team-list-grid').innerHTML = createTeamsList();
+                }
+
+                if (data.matches) {
+                    globalMatches = parseMatches(data.matches);
+                    document.getElementById('matches-content').innerHTML = renderMatchCardsPaginated(globalMatches);
+                }
+
+                if (data.tournament) {
+                    updateTournament(data.tournament);
+                }
+
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('th-TH', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                document.getElementById('status-text').innerHTML =
+                    `<span class="status-dot"></span> ซิงค์ข้อมูลสำเร็จ ${timeString}`;
+
+                const googleStatus = document.getElementById('po-googleStatus');
+                if (googleStatus) googleStatus.textContent = '● Google Sheets Connected';
+
+                const errorBox = document.getElementById('po-error');
+                if (errorBox) {
+                    errorBox.style.display = 'none';
+                    errorBox.textContent = '';
+                }
+
+            } catch (error) {
+                console.error("ดึงข้อมูลไม่สำเร็จ:", error);
+
+                document.getElementById('status-text').innerHTML =
+                    `<span style="color:#e74c3c">🔴</span> เชื่อมต่อ Google Sheets ไม่สำเร็จ`;
+
+                const googleStatus = document.getElementById('po-googleStatus');
+                if (googleStatus) googleStatus.textContent = '● Google Sheets Connection Error';
+
+                const errorBox = document.getElementById('po-error');
+                if (errorBox) {
+                    errorBox.style.display = 'block';
+                    errorBox.textContent = 'ไม่สามารถรับข้อมูลจาก Google Apps Script ได้ กรุณาตรวจสอบการ Deploy Web App และสิทธิ์การเข้าถึง';
+                }
+            }
+        }
+
+        updateData();
+        setInterval(updateData, 3000);
+
+        if (document.getElementById('matches-view').classList.contains('active')) {
+            startAutoPageAdvance();
+        }
+    </script>
+</body>
+</html>
